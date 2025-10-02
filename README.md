@@ -1,13 +1,11 @@
 # Flashcard Generator
 
-A React-based web application that generates interactive flashcards and quizzes on any topic using AI.
+A React-based web application that generates interactive flashcards on any topic using AI.
 
 ## Features
 
 - **Topic Input**: Enter any topic to generate 15 comprehensive flashcards
 - **Interactive Cards**: Click to flip between question and answer
-- **Quiz Mode**: Take an 8-question quiz with MCQ, fill-in-the-blank, and true/false questions
-- **Score Evaluation**: Get detailed performance feedback and breakdown
 - **Modern UI**: Clean, responsive design with animations
 - **Loading States**: Visual feedback during generation
 - **Error Handling**: Graceful error management
@@ -80,9 +78,7 @@ src/
 
 ## Development Notes
 
-- Currently uses mock data for development (15 flashcards + 8 quiz questions)
+- Currently uses mock data for development (15 flashcards)
 - Replace API endpoint with your actual backend
 - Flashcards flip on click with CSS animations
-- Quiz includes MCQ, fill-in-the-blank, and true/false questions
-- Score evaluation with detailed performance feedback
 - Responsive grid layout adapts to screen size

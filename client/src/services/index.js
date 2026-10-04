@@ -1,5 +1,5 @@
 import { api } from './api'
-
+const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
 export const deckService = {
   list: () => api.get('/decks'),
   get: (id) => api.get(`/decks/${id}`),
@@ -7,7 +7,7 @@ export const deckService = {
   update: (id, data) => api.put(`/decks/${id}`, data),
   delete: (id) => api.delete(`/decks/${id}`),
   share: (id) => api.post(`/decks/${id}/share`),
-  getShared: (token) => fetch(`/api/shared/${token}`).then(r => r.json()).then(d => { if (!d.success) throw new Error(d.message); return d.data }),
+  getShared: (token) => fetch(`${API_URL}/api/shared/${token}`).then(r => r.json()).then(d => { if (!d.success) throw new Error(d.message); return d.data }),
 }
 
 export const cardService = {

@@ -9,7 +9,7 @@ async function request(method, path, body, isFormData = false) {
   const headers = await getAuthHeader()
   if (!isFormData) headers['Content-Type'] = 'application/json'
 
-  const res = await fetch(`/api${path}`, {
+  const res = await fetch(`${API_URL}/api${path}`, {
     method,
     headers,
     body: body ? (isFormData ? body : JSON.stringify(body)) : undefined,
@@ -19,7 +19,7 @@ async function request(method, path, body, isFormData = false) {
   if (!res.ok) throw new Error(data.message || 'Request failed')
   return data.data
 }
-
+const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
 export const api = {
   get: (path) => request('GET', path),
   post: (path, body) => request('POST', path, body),

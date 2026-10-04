@@ -1,0 +1,126 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Light mode tokens ── */
+:root {
+  --color-bg: #fafaf9;
+  --color-surface: #ffffff;
+  --color-border: #e5e5e3;
+  --color-border-subtle: #f0f0ee;
+  --color-text-primary: #1a1a18;
+  --color-text-secondary: #6b6b67;
+  --color-text-muted: #9b9b97;
+  --color-accent: #2563eb;
+  --color-accent-subtle: #eff6ff;
+  --color-success: #16a34a;
+  --color-success-subtle: #f0fdf4;
+  --color-warning: #d97706;
+  --color-warning-subtle: #fffbeb;
+  --color-danger: #dc2626;
+  --color-danger-subtle: #fef2f2;
+}
+
+/* ── Dark mode tokens ── */
+.dark {
+  --color-bg: #111110;
+  --color-surface: #1a1a18;
+  --color-border: #2a2a28;
+  --color-border-subtle: #222220;
+  --color-text-primary: #f0f0ee;
+  --color-text-secondary: #8a8a86;
+  --color-text-muted: #5a5a56;
+  --color-accent: #3b82f6;
+  --color-accent-subtle: #1e3a5f;
+  --color-success: #22c55e;
+  --color-success-subtle: #052e16;
+  --color-warning: #f59e0b;
+  --color-warning-subtle: #2d1f00;
+  --color-danger: #ef4444;
+  --color-danger-subtle: #2d0a0a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+@keyframes feature-card-shrink {
+  to {
+    transform: scale(0.92);
+    filter: brightness(0.72);
+  }
+}
+
+.feature-card-stack {
+  animation: feature-card-shrink linear both;
+  animation-timeline: view();
+  animation-range: exit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feature-card-stack {
+    animation: none;
+  }
+}
+
+/* ── Flashcard flip ── */
+.card-flip-container {
+  perspective: 1200px;
+}
+
+.card-flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-flip-inner.flipped {
+  transform: rotateY(180deg);
+}
+
+.card-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.card-face-back {
+  transform: rotateY(180deg);
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
+
+/* ── Focus ring ── */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

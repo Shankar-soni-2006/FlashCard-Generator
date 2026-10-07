@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import {
   listGroups, createGroup, getGroup, deleteGroup, regenerateInvite,
-  previewInvite, joinGroup, removeMember, addDeck, removeDeck, getGroupDeck, getLeaderboard, copyGroupDeck,
+  previewInvite, joinGroup, removeMember, addDeck, removeDeck, getGroupDeck, getLeaderboard, copyGroupDeck, getGroupStudyQueue,
 } from '../controllers/groupController.js'
 
 const router = Router()
@@ -16,6 +16,7 @@ router.post('/:id/invite/regenerate', regenerateInvite)
 router.delete('/:id/members/:userId', removeMember)
 router.post('/:id/decks', addDeck)
 router.get('/:id/decks/:deckId', getGroupDeck)
+router.get('/:id/decks/:deckId/study', getGroupStudyQueue)
 router.post('/:id/decks/:deckId/copy', copyGroupDeck)
 router.delete('/:id/decks/:deckId', removeDeck)
 export default router

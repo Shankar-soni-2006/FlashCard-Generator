@@ -5,7 +5,7 @@ import { Badge } from '../components/common/Badge'
 import { Skeleton } from '../components/common/Skeleton'
 import { Button } from '../components/common/Button'
 import { useToast } from '../components/common/Toast'
-import { ArrowLeft, Copy } from 'lucide-react'
+import { ArrowLeft, BookOpen, Copy } from 'lucide-react'
 
 export default function GroupDeck() {
   const { id, deckId } = useParams()
@@ -59,16 +59,21 @@ export default function GroupDeck() {
         </Link>
         <div className="flex items-start justify-between gap-4">
           <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-text-primary)]">{deck.title}</h1>
-          {deck.is_own ? (
-            <Link to={`/decks/${deck.id}`}><Button variant="secondary" size="sm" className="shrink-0">Open my deck</Button></Link>
-          ) : (
-            <Button size="sm" className="shrink-0" onClick={copyToMyDecks} loading={copying}>
-              <Copy size={13} /> Copy to my decks
+          <div className="flex items-center gap-2 shrink-0">
+            {deck.is_own ? (
+              <Link to={`/decks/${deck.id}`}><Button variant="secondary" size="sm">Open my deck</Button></Link>
+            ) : (
+              <Button variant="secondary" size="sm" onClick={copyToMyDecks} loading={copying}>
+                <Copy size={13} /> Copy to my decks
+              </Button>
+            )}
+            <Button size="sm" onClick={() => navigate(`/review?group=${id}&deck=${deck.id}`)}>
+              <BookOpen size={13} /> Study now
             </Button>
-          )}
+          </div>
         </div>
         {deck.description && <p className="mt-1 text-sm text-[var(--color-text-secondary)]">{deck.description}</p>}
-        <p className="mt-2 text-xs text-[var(--color-text-muted)]">{cards.length} cards · view only</p>
+        <p className="mt-2 text-xs text-[var(--color-text-muted)]">{cards.length} cards</p>
       </div>
 
       <div>

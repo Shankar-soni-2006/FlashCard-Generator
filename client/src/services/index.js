@@ -43,6 +43,7 @@ export const groupService = {
   addDeck: (id, deckId) => api.post(`/groups/${id}/decks`, { deck_id: deckId }),
   removeDeck: (id, deckId) => api.delete(`/groups/${id}/decks/${deckId}`),
   getDeck: (id, deckId) => api.get(`/groups/${id}/decks/${deckId}`),
+  studyQueue: (id, deckId) => api.get(`/groups/${id}/decks/${deckId}/study`),
   copyDeck: (id, deckId) => api.post(`/groups/${id}/decks/${deckId}/copy`),
   leaderboard: (id, period) => api.get(`/groups/${id}/leaderboard?period=${period}`),
 }

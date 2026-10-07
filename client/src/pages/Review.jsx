@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
-import { reviewService, deckService } from '../services'
+import { reviewService, deckService, groupService } from '../services'
 import { Button } from '../components/common/Button'
 import { Skeleton } from '../components/common/Skeleton'
 import { useToast } from '../components/common/Toast'
@@ -99,7 +99,7 @@ function FlashCard({ card, revealed, onReveal }) {
   )
 }
 
-function ReviewComplete({ stats, onBack }) {
+function ReviewComplete({ stats, onBack, backLabel = 'Back to dashboard' }) {
   const total = stats.again + stats.hard + stats.good + stats.easy
   const accuracy = total > 0 ? Math.round(((stats.good + stats.easy) / total) * 100) : 0
 
@@ -132,7 +132,7 @@ function ReviewComplete({ stats, onBack }) {
         <p className="text-sm text-[var(--color-text-secondary)]">Tomorrow</p>
       </div>
 
-      <Button onClick={onBack}>Back to dashboard</Button>
+      <Button onClick={onBack}>{backLabel}</Button>
     </div>
   )
 }
@@ -140,6 +140,9 @@ function ReviewComplete({ stats, onBack }) {
 export default function Review() {
   const [searchParams] = useSearchParams()
   const deckId = searchParams.get('deck')
+  const groupId = searchParams.get('group')
+  const backPath = groupId ? `/groups/${groupId}` : '/dashboard'
+  const backLabel = groupId ? 'Back to group' : 'Back to dashboard'
   const navigate = useNavigate()
   const toast = useToast()
 
@@ -155,6 +158,12 @@ export default function Review() {
   useEffect(() => {
     const load = async () => {
       try {
+        if (groupId && deckId) {
+          const study = await groupService.studyQueue(groupId, deckId)
+          setDeckTitle(study.deck?.title || '')
+          setQueue(study.cards || [])
+          return
+        }
         const due = await reviewService.getDue()
         let cards = due || []
         if (deckId) {
@@ -170,7 +179,7 @@ export default function Review() {
       }
     }
     load()
-  }, [deckId])
+  }, [deckId, groupId])
 
   const handleReveal = useCallback(() => setRevealed(true), [])
 
@@ -214,13 +223,13 @@ export default function Review() {
     </div>
   )
 
-  if (done) return <ReviewComplete stats={stats} onBack={() => navigate('/dashboard')} />
+  if (done) return <ReviewComplete stats={stats} backLabel={backLabel} onBack={() => navigate(backPath)} />
 
   if (queue.length === 0) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center gap-4">
       <p className="text-sm font-medium text-[var(--color-text-primary)]">You're all caught up!</p>
       <p className="text-sm text-[var(--color-text-muted)]">No cards are due for review.</p>
-      <Button variant="secondary" onClick={() => navigate('/dashboard')}>Back to dashboard</Button>
+      <Button variant="secondary" onClick={() => navigate(backPath)}>{backLabel}</Button>
     </div>
   )
 
@@ -238,7 +247,7 @@ export default function Review() {
           </p>
         </div>
         <Link
-          to="/dashboard"
+          to={backPath}
           className="flex items-center gap-1 text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
         >
           <ArrowLeft size={13} /> Exit

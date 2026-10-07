@@ -317,3 +317,30 @@ export async function copyGroupDeck(req, res, next) {
     ok(res, { id: copy.id, title: copy.title, card_count: cards?.length || 0 })
   } catch (e) { next(e) }
 }
+
+// Cards of a group deck that are due (or never reviewed) for the caller, for studying in the Review page
+export async function getGroupStudyQueue(req, res, next) {
+  try {
+    const { id, deckId } = req.params
+    const me = await getMembership(id, req.user.id)
+    if (!me) return fail(res, 'Group not found.', 404)
+
+    const { data: link } = await supabase
+      .from('group_decks').select('deck_id').eq('group_id', id).eq('deck_id', deckId).maybeSingle()
+    if (!link) return fail(res, 'Deck not found in this group.', 404)
+
+    const { data: deck } = await supabase.from('decks').select('id, title').eq('id', deckId).single()
+    const { data: cards } = await supabase.from('cards').select('*').eq('deck_id', deckId)
+    const ids = (cards || []).map(c => c.id)
+
+    const progress = {}
+    if (ids.length) {
+      const { data: rows } = await supabase
+        .from('card_progress').select('card_id, due_date').eq('user_id', req.user.id).in('card_id', ids)
+      ;(rows || []).forEach(r => { progress[r.card_id] = r.due_date })
+    }
+    const now = Date.now()
+    const queue = (cards || []).filter(c => !progress[c.id] || new Date(progress[c.id]).getTime() <= now)
+    ok(res, { deck, cards: queue, total: ids.length })
+  } catch (e) { next(e) }
+}

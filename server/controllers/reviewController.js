@@ -1,6 +1,7 @@
 import { supabase } from '../config/supabase.js'
 import { sm2 } from '../services/scheduler/sm2.js'
 import { ok, fail } from '../utils/response.js'
+import { getStudyableDeckIds, canStudyCard } from '../services/access/access.js'
 
 export async function getDueCards(req, res, next) {
   try {
@@ -22,7 +23,11 @@ export async function getDueCards(req, res, next) {
     const reviewedIds = new Set((progress || []).map(p => p.card_id))
     const newCards = (allCards || []).filter(c => !reviewedIds.has(c.id))
 
-    const dueFromProgress = (progress || []).map(p => ({ ...p.cards, deck_id: p.cards?.deck_id }))
+    // Progress can exist for cards in group decks; drop any the user can no longer access (e.g. after leaving a group)
+    const studyable = await getStudyableDeckIds(req.user.id)
+    const dueFromProgress = (progress || [])
+      .filter(p => p.cards && studyable.has(p.cards.deck_id))
+      .map(p => ({ ...p.cards, deck_id: p.cards.deck_id }))
     const queue = [...dueFromProgress, ...newCards.slice(0, 50)]
 
     ok(res, queue)
@@ -36,6 +41,8 @@ export async function submitRating(req, res, next) {
     if (!['again', 'hard', 'good', 'easy'].includes(rating)) {
       return fail(res, 'Invalid rating.')
     }
+
+    if (!(await canStudyCard(req.user.id, cardId))) return fail(res, 'Card not found.', 404)
 
     // Get existing progress
     const { data: existing } = await supabase

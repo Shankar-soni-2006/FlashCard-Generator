@@ -8,6 +8,8 @@ import { postLoginPath } from './utils/invite'
 import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import Dashboard from './pages/Dashboard'
 import Generate from './pages/Generate'
 import Decks from './pages/Decks'
@@ -66,6 +68,9 @@ export default function App() {
               <Route path="/" element={<LandingRoute />} />
               <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
               <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+              <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+              {/* Not wrapped in PublicRoute: the recovery link signs the user in temporarily */}
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/shared/:token" element={<SharedDeck />} />
 
               {/* Legal */}

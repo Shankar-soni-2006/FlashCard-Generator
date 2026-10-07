@@ -96,6 +96,8 @@ export default function Generate() {
   const toast = useToast()
 
   const generate = async () => {
+    if (mode === 'image' && !imageFile) return toast({ message: 'Please choose an image first.', type: 'error' })
+    if (mode === 'image' && imageFile.size > 4 * 1024 * 1024) return toast({ message: 'Image must be 4MB or smaller.', type: 'error' })
     setGenerating(true)
     setCards(null)
     try {
@@ -111,7 +113,7 @@ export default function Generate() {
         result = await aiService.generateImage(fd)
       }
       setCards(result?.cards || [])
-      setDeckName(form.topic || form.word || form.language || 'New Deck')
+      setDeckName(mode === 'image' ? (imageFile?.name.replace(/\.[^.]+$/, '') || 'Image deck') : (form.topic || form.word || form.language || 'New Deck'))
     } catch (e) {
       toast({ message: e.message || 'Unable to generate flashcards. Please try again.', type: 'error' })
     } finally {
@@ -191,10 +193,25 @@ export default function Generate() {
 
         {/* Image */}
         {mode === 'image' && (
-          <div className="border-2 border-dashed rounded-lg p-10 text-center border-[var(--color-border)] opacity-60">
+          <div
+            onClick={() => fileRef.current?.click()}
+            onDragOver={e => { e.preventDefault(); setImageDrag(true) }}
+            onDragLeave={() => setImageDrag(false)}
+            onDrop={handleDrop}
+            className={`border-2 border-dashed rounded-lg p-10 text-center cursor-pointer transition-colors ${imageDrag ? 'border-[var(--color-text-primary)]' : 'border-[var(--color-border)] hover:border-[var(--color-text-muted)]'}`}
+          >
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              className="hidden"
+              onChange={e => e.target.files[0] && setImageFile(e.target.files[0])}
+            />
             <Upload size={20} className="mx-auto mb-3 text-[var(--color-text-muted)]" />
-            <p className="text-sm font-medium text-[var(--color-text-primary)]">Image mode unavailable</p>
-            <p className="text-xs text-[var(--color-text-muted)] mt-1">The current AI provider does not support vision. Use Topic, Notes, Programming, or Vocabulary instead.</p>
+            <p className="text-sm font-medium text-[var(--color-text-primary)]">
+              {imageFile ? imageFile.name : 'Drop an image or click to upload'}
+            </p>
+            <p className="text-xs text-[var(--color-text-muted)] mt-1">PNG, JPG or WEBP, up to 4MB. Notes, slides, diagrams or textbook pages.</p>
           </div>
         )}
 
@@ -226,7 +243,7 @@ export default function Generate() {
         </div>
 
         <div className="flex justify-end">
-          <Button size="lg" onClick={generate} loading={generating} disabled={mode === 'image'}>
+          <Button size="lg" onClick={generate} loading={generating} disabled={mode === 'image' && !imageFile}>
             {generating ? 'Generating...' : 'Generate →'}
           </Button>
         </div>

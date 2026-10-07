@@ -1,7 +1,7 @@
 import multer from 'multer'
 
 const ALLOWED_TYPES = ['image/png', 'image/jpg', 'image/jpeg', 'image/webp']
-const MAX_SIZE = 5 * 1024 * 1024 // 5MB
+const MAX_SIZE = 4 * 1024 * 1024 // 4MB (Vercel body limit is ~4.5MB)
 
 export const upload = multer({
   storage: multer.memoryStorage(),

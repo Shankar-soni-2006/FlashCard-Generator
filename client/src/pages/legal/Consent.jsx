@@ -13,7 +13,7 @@ export default function Consent() {
         <ul className="list-disc list-inside flex flex-col gap-1.5 text-[var(--color-text-muted)]">
           <li>Storage of your account information (name, email) in our database</li>
           <li>Storage of flashcard decks, cards, and review history you create</li>
-          <li>Processing of text and images you submit through the AI generation feature by Google's Gemini API</li>
+          <li>Processing of text and images you submit through the AI generation feature by our third-party AI providers</li>
           <li>Storage of your spaced repetition progress and review history</li>
           <li>Use of an authentication cookie to maintain your session</li>
           <li>Storage of your theme preference in localStorage</li>
@@ -21,7 +21,7 @@ export default function Consent() {
       </Section>
 
       <Section title="3. AI Content Processing">
-        <p>When you use the AI generation features, the content you submit (topics, notes, images) is sent to Google's Gemini API for processing. This is subject to Google's data processing terms. We recommend not submitting sensitive personal information through the generation interface.</p>
+        <p>When you use the AI generation features, the content you submit (topics, notes, images) is sent to third-party AI providers for processing (Groq for text generation and Cloudflare Workers AI for image reading). This is subject to those providers' data processing terms. We recommend not submitting sensitive personal information through the generation interface.</p>
       </Section>
 
       <Section title="4. Legal Basis for Processing">

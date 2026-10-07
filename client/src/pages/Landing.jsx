@@ -127,12 +127,6 @@ function Hero() {
 
       {/* Content — z-[2] sits above DotField */}
       <div className="relative z-[2] flex flex-col items-center text-center px-6 max-w-3xl mx-auto pointer-events-none">
-        <div className="pointer-events-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[var(--color-border)]
-          bg-[var(--color-surface)]/80 backdrop-blur-sm mb-8">
-          <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-success)]" />
-          <span className="text-xs text-[var(--color-text-secondary)]">Powered by Gemini AI</span>
-        </div>
-
         <h1 className="text-5xl sm:text-6xl md:text-7xl font-semibold tracking-tight text-[var(--color-text-primary)] leading-[1.05]">
           Learn anything.<br />
           <span className="text-[var(--color-text-secondary)] font-normal">Remember everything.</span>
@@ -182,7 +176,7 @@ function Features() {
 
 /* ── How it works ── */
 const steps = [
-  { n: '01', title: 'Generate', desc: 'Pick a topic, paste notes, or upload an image. Gemini creates your deck instantly.' },
+  { n: '01', title: 'Generate', desc: 'Pick a topic, paste notes, or upload an image. AI creates your deck instantly.' },
   { n: '02', title: 'Study', desc: 'Flip through cards at your own pace. Reveal answers when ready.' },
   { n: '03', title: 'Rate', desc: 'Mark each card Again, Hard, Good, or Easy. Takes two seconds.' },
   { n: '04', title: 'Review', desc: 'The SM-2 algorithm schedules each card at the perfect interval. Come back tomorrow.' },

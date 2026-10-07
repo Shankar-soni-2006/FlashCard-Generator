@@ -12,7 +12,7 @@ export default function Privacy() {
         <p>We use the information we collect to:</p>
         <ul className="list-disc list-inside flex flex-col gap-1 text-[var(--color-text-muted)]">
           <li>Provide, maintain, and improve the service</li>
-          <li>Process your flashcard generation requests via the Gemini AI API</li>
+          <li>Process your flashcard generation requests via third-party AI providers</li>
           <li>Calculate and store your spaced repetition schedule</li>
           <li>Send you transactional emails such as password resets</li>
           <li>Monitor and analyze usage patterns to improve the product</li>
@@ -21,14 +21,15 @@ export default function Privacy() {
 
       <Section title="3. Data Storage">
         <p>Your data is stored in Supabase, a PostgreSQL database hosted on AWS infrastructure. All data is encrypted at rest and in transit using TLS.</p>
-        <p>Images you upload for flashcard generation are stored in Supabase Storage and are associated with your account.</p>
+        <p>Images you upload for flashcard generation are processed in memory, sent to our AI provider to read, and are not stored by us.</p>
       </Section>
 
       <Section title="4. Third-Party Services">
         <p>We use the following third-party services:</p>
         <ul className="list-disc list-inside flex flex-col gap-1 text-[var(--color-text-muted)]">
           <li><strong className="text-[var(--color-text-secondary)]">Supabase</strong> — authentication and database</li>
-          <li><strong className="text-[var(--color-text-secondary)]">Google Gemini API</strong> — AI flashcard generation. Content you submit for generation is processed by Google. See Google's privacy policy at policies.google.com.</li>
+          <li><strong className="text-[var(--color-text-secondary)]">Groq</strong> — AI flashcard generation from topics, notes, programming and vocabulary requests. The text you submit is processed by Groq. See groq.com/privacy-policy.</li>
+          <li><strong className="text-[var(--color-text-secondary)]">Cloudflare Workers AI</strong> — reading images you upload to generate flashcards. The image you submit is processed by Cloudflare. See cloudflare.com/privacypolicy.</li>
           <li><strong className="text-[var(--color-text-secondary)]">Google OAuth</strong> — optional sign-in method</li>
         </ul>
       </Section>

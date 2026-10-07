@@ -12,6 +12,19 @@ async function runModel(body) {
   })
 }
 
+function parseModelJSON(raw) {
+  if (raw && typeof raw === 'object') return raw
+  const text = String(raw ?? '')
+  const start = text.indexOf('{')
+  const end = text.lastIndexOf('}')
+  if (start === -1 || end <= start) return null
+  try {
+    return JSON.parse(text.slice(start, end + 1))
+  } catch {
+    return null
+  }
+}
+
 export async function generateImageCards({ imageBuffer, mimeType, count = 10 }) {
   if (!process.env.CF_ACCOUNT_ID?.trim() || !process.env.CF_API_TOKEN?.trim()) {
     throw Object.assign(new Error('Image mode is not configured. Set CF_ACCOUNT_ID and CF_API_TOKEN on the server.'), { statusCode: 500 })
@@ -65,11 +78,10 @@ Return only valid JSON.`
   }
 
   const json = await res.json()
-  const raw = json.result?.response
-  let data
-  try {
-    data = typeof raw === 'object' && raw !== null ? raw : JSON.parse(String(raw).replace(/^```(?:json)?\s*|\s*```$/g, '').trim())
-  } catch {
+  const raw = json.result?.response ?? json.result?.choices?.[0]?.message?.content
+  const data = parseModelJSON(raw)
+  if (!data) {
+    console.error('Unparseable vision response', JSON.stringify(json).slice(0, 1500))
     throw Object.assign(new Error('Could not understand the AI response. Please try again.'), { statusCode: 502 })
   }
 

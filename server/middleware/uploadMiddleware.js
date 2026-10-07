@@ -8,6 +8,6 @@ export const upload = multer({
   limits: { fileSize: MAX_SIZE },
   fileFilter: (_req, file, cb) => {
     if (ALLOWED_TYPES.includes(file.mimetype)) cb(null, true)
-    else cb(new Error('Please upload a valid PNG, JPG, JPEG or WEBP image.'))
+    else cb(Object.assign(new Error('Please upload a valid PNG, JPG, JPEG or WEBP image.'), { status: 400 }))
   },
 })

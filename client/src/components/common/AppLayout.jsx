@@ -3,6 +3,7 @@ import { LayoutDashboard, Layers, BookOpen, Sparkles, BarChart2, Users, Settings
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { ThemeToggle } from './ThemeToggle'
+import { PendingInviteBanner } from './PendingInviteBanner'
 import { cn } from '../../utils/cn'
 
 const navItems = [
@@ -104,6 +105,7 @@ export function AppLayout({ children }) {
       {/* Main content */}
       <main className="flex-1 overflow-y-auto md:pt-0 pt-12">
         <div className="max-w-3xl mx-auto px-6 py-8">
+          <PendingInviteBanner />
           {children}
         </div>
       </main>

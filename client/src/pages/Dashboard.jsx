@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { deckService, reviewService } from '../services'
+import { deckService, reviewService, groupService } from '../services'
 import { Button } from '../components/common/Button'
 import { Skeleton } from '../components/common/Skeleton'
 import { formatDate } from '../utils/cn'
-import { ArrowRight, BookOpen, Layers, Sparkles, FileText, Image, Code, BookMarked } from 'lucide-react'
+import { ArrowRight, BookOpen, Layers, Sparkles, FileText, Image, Code, BookMarked, Users } from 'lucide-react'
 
 function MetricItem({ label, value }) {
   return (
@@ -47,6 +47,7 @@ export default function Dashboard() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [decks, setDecks] = useState([])
+  const [groups, setGroups] = useState([])
   const [dueCount, setDueCount] = useState(0)
   const [stats, setStats] = useState({ total_cards: 0, reviewed_today: 0, streak: 0, accuracy: 0 })
   const [loading, setLoading] = useState(true)
@@ -64,6 +65,7 @@ export default function Dashboard() {
       })
       .catch(() => {})
       .finally(() => setLoading(false))
+    groupService.list().then(g => setGroups(g || [])).catch(() => {})
   }, [])
 
   return (
@@ -122,6 +124,30 @@ export default function Dashboard() {
           ))}
         </div>
       </div>
+
+      {/* Groups */}
+      {groups.length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-widest">My groups</p>
+            <Link to="/groups" className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors">
+              View all
+            </Link>
+          </div>
+          {groups.slice(0, 4).map(g => (
+            <Link
+              key={g.id}
+              to={`/groups/${g.id}`}
+              className="flex items-center justify-between py-3 border-b border-[var(--color-border-subtle)] hover:bg-[var(--color-border-subtle)] -mx-2 px-2 rounded transition-colors group"
+            >
+              <span className="text-sm text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)] transition-colors">{g.name}</span>
+              <span className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)]">
+                <Users size={12} /> {g.member_count}
+              </span>
+            </Link>
+          ))}
+        </div>
+      )}
 
       {/* Decks */}
       <div>

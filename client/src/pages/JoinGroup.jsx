@@ -17,17 +17,25 @@ function JoinContent({ token }) {
   const toast = useToast()
 
   useEffect(() => {
-    // The invite has reached a logged-in user, so it no longer needs to survive a redirect
-    clearPendingInvite()
+    // The invite stays remembered until the user joins or declines, so leaving this page
+    // without clicking Join does not lose it (the app shows a banner until it is resolved)
+    setPendingInvite(token)
     groupService.previewInvite(token)
-      .then(setInvite)
-      .catch(e => setError(e.message || 'This invite link is invalid.'))
+      .then(data => {
+        if (data.already_member) clearPendingInvite()
+        setInvite(data)
+      })
+      .catch(e => {
+        clearPendingInvite() // invalid or reset links cannot be joined later either
+        setError(e.message || 'This invite link is invalid.')
+      })
   }, [token])
 
   const join = async () => {
     setJoining(true)
     try {
       const group = await groupService.join(token)
+      clearPendingInvite()
       toast({ message: `You joined ${group.name}.`, type: 'success' })
       navigate(`/groups/${group.id}`, { replace: true })
     } catch (e) {
@@ -66,7 +74,7 @@ function JoinContent({ token }) {
         ) : (
           <>
             <Button onClick={join} loading={joining}>Join group</Button>
-            <Link to="/groups"><Button variant="secondary">Not now</Button></Link>
+            <Link to="/groups" onClick={clearPendingInvite}><Button variant="secondary">Not now</Button></Link>
           </>
         )}
       </div>

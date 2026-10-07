@@ -1,6 +1,7 @@
 import { randomBytes } from 'crypto'
 import { supabase } from '../config/supabase.js'
 import { ok, fail } from '../utils/response.js'
+import { getXp, POINTS } from '../services/xp/xp.js'
 
 const newInviteToken = () => randomBytes(16).toString('hex')
 
@@ -235,5 +236,40 @@ export async function getGroupDeck(req, res, next) {
       .from('cards').select('id, question, answer, explanation, difficulty, tags, code_example, code_language, word, definition')
       .eq('deck_id', deckId)
     ok(res, { deck, cards: cards || [] })
+  } catch (e) { next(e) }
+}
+
+// Members ranked by XP earned from reviews. period=week (last 7 days) or all.
+export async function getLeaderboard(req, res, next) {
+  try {
+    const me = await getMembership(req.params.id, req.user.id)
+    if (!me) return fail(res, 'Group not found.', 404)
+
+    const period = req.query.period === 'all' ? 'all' : 'week'
+    const since = period === 'week' ? new Date(Date.now() - 7 * 86400000) : null
+
+    const { data: memberRows, error } = await supabase
+      .from('group_members').select('user_id, profiles(name, email)').eq('group_id', req.params.id)
+    if (error) throw error
+
+    const totals = await getXp(memberRows.map(m => m.user_id), since)
+    const sorted = memberRows
+      .map(m => ({
+        user_id: m.user_id,
+        name: displayName(m.profiles, 'Member'),
+        xp: totals[m.user_id].xp,
+        reviews: totals[m.user_id].reviews,
+        is_you: m.user_id === req.user.id,
+      }))
+      .sort((a, b) => b.xp - a.xp || a.name.localeCompare(b.name))
+
+    // Equal XP shares a rank (1, 2, 2, 4)
+    const entries = sorted.map((e, i) => ({
+      ...e,
+      rank: i > 0 && sorted[i - 1].xp === e.xp ? null : i + 1,
+    }))
+    entries.forEach((e, i) => { if (e.rank === null) e.rank = entries[i - 1].rank })
+
+    ok(res, { period, points: POINTS, entries })
   } catch (e) { next(e) }
 }

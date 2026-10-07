@@ -6,7 +6,8 @@ import { Dialog } from '../components/common/Dialog'
 import { Badge } from '../components/common/Badge'
 import { Skeleton } from '../components/common/Skeleton'
 import { useToast } from '../components/common/Toast'
-import { ArrowLeft, Copy, Plus, RefreshCw, Trash2, UserMinus, LogOut } from 'lucide-react'
+import { SegmentedControl } from '../components/common/SegmentedControl'
+import { ArrowLeft, Copy, Plus, RefreshCw, Trash2, UserMinus, LogOut, Trophy } from 'lucide-react'
 
 export default function GroupDetails() {
   const { id } = useParams()
@@ -17,6 +18,8 @@ export default function GroupDetails() {
   const [addOpen, setAddOpen] = useState(false)
   const [myDecks, setMyDecks] = useState([])
   const [confirm, setConfirm] = useState(null) // { title, body, action, label }
+  const [period, setPeriod] = useState('week')
+  const [board, setBoard] = useState(null)
 
   const load = () =>
     groupService.get(id)
@@ -25,6 +28,13 @@ export default function GroupDetails() {
       .finally(() => setLoading(false))
 
   useEffect(() => { load() }, [id])
+
+  useEffect(() => {
+    setBoard(null)
+    groupService.leaderboard(id, period)
+      .then(setBoard)
+      .catch(() => setBoard({ entries: [], points: null, error: true }))
+  }, [id, period, data?.members?.length])
 
   const isOwner = data?.role === 'owner'
   const inviteUrl = data ? `${window.location.origin}/join/${data.group.invite_token}` : ''
@@ -148,6 +158,51 @@ export default function GroupDetails() {
             </Button>
           )}
         </div>
+      </section>
+
+      {/* Leaderboard */}
+      <section className="flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="flex items-center gap-1.5 text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wide">
+            <Trophy size={13} /> Leaderboard
+          </h2>
+          <SegmentedControl
+            options={[{ value: 'week', label: 'This week' }, { value: 'all', label: 'All time' }]}
+            value={period}
+            onChange={setPeriod}
+          />
+        </div>
+        {!board ? (
+          <div className="flex flex-col gap-2">
+            {[1, 2, 3].map(i => <Skeleton key={i} className="h-11 w-full" />)}
+          </div>
+        ) : board.error ? (
+          <p className="py-4 text-sm text-[var(--color-text-muted)]">Unable to load the leaderboard.</p>
+        ) : (
+          <div>
+            {board.entries.map(e => (
+              <div
+                key={e.user_id}
+                className={`flex items-center gap-4 px-2 py-3 border-b border-[var(--color-border-subtle)] ${e.is_you ? 'bg-[var(--color-border-subtle)] rounded' : ''}`}
+              >
+                <span className={`w-6 text-sm font-semibold tabular-nums ${e.rank === 1 && e.xp > 0 ? 'text-[var(--color-warning)]' : 'text-[var(--color-text-muted)]'}`}>
+                  {e.rank}
+                </span>
+                <p className="flex-1 min-w-0 text-sm text-[var(--color-text-primary)] truncate">
+                  {e.name}{e.is_you && <span className="text-[var(--color-text-muted)]"> (you)</span>}
+                </p>
+                <span className="text-xs text-[var(--color-text-muted)] shrink-0">{e.reviews} {e.reviews === 1 ? 'review' : 'reviews'}</span>
+                <span className="w-20 text-right text-sm font-medium text-[var(--color-text-primary)] tabular-nums shrink-0">{e.xp} XP</span>
+              </div>
+            ))}
+            {board.points && (
+              <p className="mt-3 text-xs text-[var(--color-text-muted)]">
+                Earn XP by reviewing cards: Again {board.points.again} · Hard {board.points.hard} · Good {board.points.good} · Easy {board.points.easy}.
+                Each card counts once per day.
+              </p>
+            )}
+          </div>
+        )}
       </section>
 
       {/* Decks */}

@@ -36,7 +36,16 @@ export async function getDueCards(req, res, next) {
     const dueFromProgress = (progress || [])
       .filter(p => p.cards && studyable.has(p.cards.deck_id) && (!deckId || p.cards.deck_id === deckId))
       .map(p => ({ ...p.cards, deck_id: p.cards.deck_id }))
-    const queue = [...dueFromProgress, ...newCards.slice(0, 50)]
+    // Daily new-card limit (user setting, default 50), minus new cards already started today (UTC day)
+    const setting = Number(req.user.user_metadata?.settings?.daily_new_limit)
+    const dailyLimit = Number.isFinite(setting) && setting >= 0 ? Math.min(Math.floor(setting), 500) : 50
+    const startOfDay = new Date()
+    startOfDay.setUTCHours(0, 0, 0, 0)
+    const { count: startedToday } = await supabase
+      .from('card_progress').select('*', { count: 'exact', head: true })
+      .eq('user_id', req.user.id).gte('created_at', startOfDay.toISOString())
+    const newAllowance = Math.max(0, dailyLimit - (startedToday || 0))
+    const queue = [...dueFromProgress, ...newCards.slice(0, newAllowance)]
 
     ok(res, queue)
   } catch (e) { next(e) }

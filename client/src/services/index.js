@@ -7,6 +7,9 @@ export const deckService = {
   update: (id, data) => api.put(`/decks/${id}`, data),
   delete: (id) => api.delete(`/decks/${id}`),
   share: (id) => api.post(`/decks/${id}/share`),
+  unshare: (id) => api.post(`/decks/${id}/unshare`),
+  sharedLinks: () => api.get('/decks/shared-links'),
+  export: (format) => api.download(`/decks/export?format=${format}`, `flashcards.${format}`),
   getShared: (token) => fetch(`${API_URL}/api/shared/${token}`).then(r => r.json()).then(d => { if (!d.success) throw new Error(d.message); return d.data }),
 }
 

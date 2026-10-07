@@ -1,6 +1,8 @@
 import { useState, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { aiService, deckService, cardService } from '../services'
+import { useAuth } from '../context/AuthContext'
+import { getSettings } from '../utils/settings'
 import { Button } from '../components/common/Button'
 import { Input, Textarea, Select } from '../components/common/Input'
 import { SegmentedControl } from '../components/common/SegmentedControl'
@@ -84,7 +86,11 @@ function CardPreview({ card, index, onEdit, onDelete }) {
 export default function Generate() {
   const [searchParams] = useSearchParams()
   const [mode, setMode] = useState(searchParams.get('mode') || 'topic')
-  const [form, setForm] = useState({ topic: '', notes: '', language: 'Java', word: '', count: 10, difficulty: 'auto' })
+  const { user } = useAuth()
+  const [form, setForm] = useState(() => {
+    const prefs = getSettings(user)
+    return { topic: '', notes: '', language: 'Java', word: '', count: prefs.default_card_count, difficulty: prefs.default_difficulty }
+  })
   const [imageFile, setImageFile] = useState(null)
   const [imageDrag, setImageDrag] = useState(false)
   const [generating, setGenerating] = useState(false)

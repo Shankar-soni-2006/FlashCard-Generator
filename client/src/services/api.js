@@ -26,4 +26,21 @@ export const api = {
   put: (path, body) => request('PUT', path, body),
   delete: (path) => request('DELETE', path),
   postForm: (path, formData) => request('POST', path, formData, true),
+  // Fetches a file with the auth header and saves it through the browser
+  download: async (path, fallbackName) => {
+    const res = await fetch(`${API_URL}/api${path}`, { headers: await getAuthHeader() })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      throw new Error(data.message || 'Download failed')
+    }
+    const name = res.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || fallbackName
+    const url = URL.createObjectURL(await res.blob())
+    const a = document.createElement('a')
+    a.href = url
+    a.download = name
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  },
 }

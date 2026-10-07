@@ -121,3 +121,88 @@ export async function getSharedDeck(req, res, next) {
     ok(res, { deck, cards: cards || [] })
   } catch (e) { next(e) }
 }
+
+const EXPORT_CARD_FIELDS = [
+  'question', 'answer', 'explanation', 'code_example', 'code_language', 'word', 'definition',
+  'part_of_speech', 'pronunciation', 'example_sentence', 'synonyms', 'antonyms', 'difficulty', 'tags', 'source_type',
+]
+
+const csvCell = (v) => {
+  if (v === null || v === undefined) return ''
+  const s = Array.isArray(v) ? v.join('; ') : String(v)
+  // Prefix formula-looking text so spreadsheets do not execute it
+  const safe = /^[=+\-@]/.test(s) ? `'${s}` : s
+  return /[",\n\r]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe
+}
+
+// All of the user's decks and cards, as JSON or CSV (?format=json|csv)
+export async function exportDecks(req, res, next) {
+  try {
+    const { data: decks, error } = await supabase
+      .from('decks').select('id, title, description, deck_type, created_at')
+      .eq('user_id', req.user.id).order('created_at')
+    if (error) throw error
+
+    const ids = (decks || []).map(d => d.id)
+    const cardsByDeck = {}
+    if (ids.length) {
+      const { data: cards, error: cardError } = await supabase
+        .from('cards').select(['deck_id', ...EXPORT_CARD_FIELDS].join(', ')).in('deck_id', ids).order('created_at')
+      if (cardError) throw cardError
+      ;(cards || []).forEach(c => { (cardsByDeck[c.deck_id] ||= []).push(c) })
+    }
+
+    const stamp = new Date().toISOString().slice(0, 10)
+    if (req.query.format === 'csv') {
+      const header = ['deck', ...EXPORT_CARD_FIELDS]
+      const rows = [header.join(',')]
+      for (const d of decks) {
+        for (const c of cardsByDeck[d.id] || []) {
+          rows.push([d.title, ...EXPORT_CARD_FIELDS.map(f => c[f])].map(csvCell).join(','))
+        }
+      }
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8')
+      res.setHeader('Content-Disposition', `attachment; filename="flashcards-${stamp}.csv"`)
+      return res.send('﻿' + rows.join('\r\n'))
+    }
+
+    const payload = {
+      exported_at: new Date().toISOString(),
+      decks: decks.map(d => ({
+        title: d.title,
+        description: d.description,
+        deck_type: d.deck_type,
+        created_at: d.created_at,
+        cards: (cardsByDeck[d.id] || []).map(({ deck_id, ...card }) => card),
+      })),
+    }
+    res.setHeader('Content-Type', 'application/json; charset=utf-8')
+    res.setHeader('Content-Disposition', `attachment; filename="flashcards-${stamp}.json"`)
+    res.send(JSON.stringify(payload, null, 2))
+  } catch (e) { next(e) }
+}
+
+// Decks the user currently shares through a public link
+export async function listSharedDecks(req, res, next) {
+  try {
+    const { data, error } = await supabase
+      .from('decks').select('id, title, share_token, updated_at, cards(count)')
+      .eq('user_id', req.user.id).eq('visibility', 'public').not('share_token', 'is', null)
+      .order('updated_at', { ascending: false })
+    if (error) throw error
+    ok(res, (data || []).map(d => ({
+      id: d.id, title: d.title, share_token: d.share_token, card_count: d.cards?.[0]?.count ?? 0,
+    })))
+  } catch (e) { next(e) }
+}
+
+export async function unshareDeck(req, res, next) {
+  try {
+    const { data, error } = await supabase
+      .from('decks').update({ visibility: 'private', share_token: null })
+      .eq('id', req.params.id).eq('user_id', req.user.id).select('id')
+    if (error) throw error
+    if (!data?.length) return fail(res, 'Deck not found.', 404)
+    ok(res, { unshared: true })
+  } catch (e) { next(e) }
+}

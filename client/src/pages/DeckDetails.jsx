@@ -56,6 +56,7 @@ export default function DeckDetails() {
   const [editCard, setEditCard] = useState(null)
   const [deleteCard, setDeleteCard] = useState(null)
   const [saving, setSaving] = useState(false)
+  const [shareUrl, setShareUrl] = useState('')
 
   const load = async () => {
     try {
@@ -98,13 +99,19 @@ export default function DeckDetails() {
   }
 
   const shareDeck = async () => {
+    let url
     try {
       const result = await deckService.share(id)
-      const url = `${window.location.origin}/shared/${result.share_token}`
+      url = `${window.location.origin}/shared/${result.share_token}`
+    } catch {
+      return toast({ message: 'Unable to share deck.', type: 'error' })
+    }
+    try {
       await navigator.clipboard.writeText(url)
       toast({ message: 'Share link copied.', type: 'success' })
     } catch {
-      toast({ message: 'Unable to share deck.', type: 'error' })
+      // Clipboard can be blocked by the browser; show the link so it can be copied manually
+      setShareUrl(url)
     }
   }
 
@@ -179,6 +186,19 @@ export default function DeckDetails() {
             </div>
           </div>
         )}
+      </Dialog>
+
+      <Dialog open={!!shareUrl} onClose={() => setShareUrl('')} title="Share deck">
+        <p className="text-sm text-[var(--color-text-secondary)] mb-3">Anyone with this link can view the deck.</p>
+        <input
+          readOnly
+          value={shareUrl}
+          onFocus={e => e.target.select()}
+          className="w-full rounded border border-[var(--color-border)] bg-transparent px-3 py-2 text-sm text-[var(--color-text-primary)]"
+        />
+        <div className="flex justify-end mt-4">
+          <Button size="sm" onClick={() => setShareUrl('')}>Done</Button>
+        </div>
       </Dialog>
 
       {/* Delete confirm */}

@@ -91,7 +91,11 @@ export async function deleteDeck(req, res, next) {
 
 export async function shareDeck(req, res, next) {
   try {
-    const share_token = randomUUID()
+    // Reuse an existing token so previously shared links keep working
+    const { data: existing } = await supabase
+      .from('decks').select('share_token')
+      .eq('id', req.params.id).eq('user_id', req.user.id).maybeSingle()
+    const share_token = existing?.share_token || randomUUID()
     const { data, error } = await supabase
       .from('decks')
       .update({ visibility: 'public', share_token })
@@ -108,7 +112,7 @@ export async function getSharedDeck(req, res, next) {
   try {
     const { data: deck, error } = await supabase
       .from('decks')
-      .select('*')
+      .select('id, title, description, deck_type, updated_at')
       .eq('share_token', req.params.token)
       .eq('visibility', 'public')
       .single()

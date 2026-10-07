@@ -241,7 +241,7 @@ export async function getGroupDeck(req, res, next) {
   } catch (e) { next(e) }
 }
 
-// Members ranked by XP earned from reviews. period=week (last 7 days) or all.
+// Members ranked by XP earned from reviewing this group's decks. period=week (last 7 days) or all.
 export async function getLeaderboard(req, res, next) {
   try {
     const me = await getMembership(req.params.id, req.user.id)
@@ -254,7 +254,12 @@ export async function getLeaderboard(req, res, next) {
       .from('group_members').select('user_id, profiles(name, email)').eq('group_id', req.params.id)
     if (error) throw error
 
-    const totals = await getXp(memberRows.map(m => m.user_id), since)
+    // Each group ranks only on reviews of its own decks, so every group has a separate leaderboard
+    const { data: groupDecks } = await supabase
+      .from('group_decks').select('deck_id').eq('group_id', req.params.id)
+    const deckIds = (groupDecks || []).map(d => d.deck_id)
+
+    const totals = await getXp(memberRows.map(m => m.user_id), { deckIds, since })
     const sorted = memberRows
       .map(m => ({
         user_id: m.user_id,

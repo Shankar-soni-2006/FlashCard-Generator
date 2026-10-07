@@ -198,7 +198,7 @@ export default function GroupDetails() {
             ))}
             {board.points && (
               <p className="mt-3 text-xs text-[var(--color-text-muted)]">
-                Earn XP by reviewing cards: Again {board.points.again} · Hard {board.points.hard} · Good {board.points.good} · Easy {board.points.easy}.
+                Earn XP by studying this group's decks: Again {board.points.again} · Hard {board.points.hard} · Good {board.points.good} · Easy {board.points.easy}.
                 Each card counts once per day.
               </p>
             )}

@@ -6,18 +6,19 @@ export const POINTS = { again: 2, hard: 5, good: 10, easy: 15 }
 const PAGE = 1000
 const MAX_ROWS = 50000
 
-// Returns { [userId]: { xp, reviews } } for the given users.
+// Returns { [userId]: { xp, reviews } } for the given users, counting only reviews of cards in `deckIds`.
 // Only the first review of a card on a given day earns XP, so re-reviewing the same card can't be farmed.
-export async function getXp(userIds, since = null) {
+export async function getXp(userIds, { deckIds, since = null }) {
   const totals = Object.fromEntries(userIds.map(id => [id, { xp: 0, reviews: 0 }]))
-  if (!userIds.length) return totals
+  if (!userIds.length || !deckIds.length) return totals
 
   const seen = new Set()
   for (let from = 0; from < MAX_ROWS; from += PAGE) {
     let query = supabase
       .from('reviews')
-      .select('user_id, card_id, rating, reviewed_at')
+      .select('user_id, card_id, rating, reviewed_at, cards!inner(deck_id)')
       .in('user_id', userIds)
+      .in('cards.deck_id', deckIds)
       .order('reviewed_at', { ascending: true })
       .range(from, from + PAGE - 1)
     if (since) query = query.gte('reviewed_at', since.toISOString())

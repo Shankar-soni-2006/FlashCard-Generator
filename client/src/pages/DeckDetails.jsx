@@ -79,8 +79,8 @@ export default function DeckDetails() {
       setCards(c => c.map(x => x.id === updated.id ? updated : x))
       setEditCard(null)
       toast({ message: 'Card updated.', type: 'success' })
-    } catch {
-      toast({ message: 'Unable to update card.', type: 'error' })
+    } catch (e) {
+      toast({ message: e.message || 'Unable to update card.', type: 'error' })
     } finally {
       setSaving(false)
     }

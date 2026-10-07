@@ -65,9 +65,10 @@ export async function createDeck(req, res, next) {
 export async function updateDeck(req, res, next) {
   try {
     const { title, description } = req.body
+    if (title !== undefined && !String(title).trim()) return fail(res, 'Title is required.')
     const { data, error } = await supabase
       .from('decks')
-      .update({ title, description, updated_at: new Date().toISOString() })
+      .update({ title: title === undefined ? undefined : String(title).trim(), description, updated_at: new Date().toISOString() })
       .eq('id', req.params.id)
       .eq('user_id', req.user.id)
       .select()

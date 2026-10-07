@@ -98,6 +98,7 @@ export default function GroupDetails() {
   )
 
   const { group, members, decks } = data
+  let copied
   const groupDeckIds = new Set(decks.map(d => d.id))
   const addable = myDecks.filter(d => !groupDeckIds.has(d.id))
 
@@ -221,6 +222,19 @@ export default function GroupDetails() {
                   <p className="text-sm text-[var(--color-text-primary)] truncate">{d.title}</p>
                   <p className="text-xs text-[var(--color-text-muted)] mt-0.5">{d.card_count} cards · added by {d.added_by_name}</p>
                 </Link>
+                {!d.is_own && (
+                  <button
+                    title="Copy to my decks"
+                    onClick={() => run(
+                      async () => { copied = await groupService.copyDeck(id, d.id) },
+                      `Copied ${d.title} to your decks.`,
+                      () => navigate(`/decks/${copied.id}`)
+                    )}
+                    className="p-1.5 rounded text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
+                  >
+                    <Copy size={14} />
+                  </button>
+                )}
                 {d.can_remove && (
                   <button
                     title="Remove from group"

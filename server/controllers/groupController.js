@@ -101,6 +101,7 @@ export async function getGroup(req, res, next) {
       added_by: d.added_by,
       added_by_name: names[d.added_by] || 'Member',
       can_remove: membership.role === 'owner' || d.added_by === req.user.id,
+      is_own: d.added_by === req.user.id,
     }))
 
     ok(res, { group, role: membership.role, members, decks })
@@ -231,11 +232,12 @@ export async function getGroupDeck(req, res, next) {
     if (!link) return fail(res, 'Deck not found in this group.', 404)
 
     const { data: deck } = await supabase
-      .from('decks').select('id, title, description, deck_type').eq('id', deckId).single()
+      .from('decks').select('id, user_id, title, description, deck_type').eq('id', deckId).single()
     const { data: cards } = await supabase
       .from('cards').select('id, question, answer, explanation, difficulty, tags, code_example, code_language, word, definition')
       .eq('deck_id', deckId)
-    ok(res, { deck, cards: cards || [] })
+    const { user_id, ...publicDeck } = deck
+    ok(res, { deck: { ...publicDeck, is_own: user_id === req.user.id }, cards: cards || [] })
   } catch (e) { next(e) }
 }
 
@@ -271,5 +273,47 @@ export async function getLeaderboard(req, res, next) {
     entries.forEach((e, i) => { if (e.rank === null) e.rank = entries[i - 1].rank })
 
     ok(res, { period, points: POINTS, entries })
+  } catch (e) { next(e) }
+}
+
+const CARD_FIELDS = [
+  'question', 'answer', 'explanation', 'code_example', 'code_language', 'word', 'definition',
+  'part_of_speech', 'pronunciation', 'example_sentence', 'synonyms', 'antonyms',
+  'difficulty', 'tags', 'source_type',
+]
+
+// Copies a group deck into the caller's own account as a new private deck. Review progress is not copied.
+export async function copyGroupDeck(req, res, next) {
+  try {
+    const { id, deckId } = req.params
+    const me = await getMembership(id, req.user.id)
+    if (!me) return fail(res, 'Group not found.', 404)
+
+    const { data: link } = await supabase
+      .from('group_decks').select('deck_id').eq('group_id', id).eq('deck_id', deckId).maybeSingle()
+    if (!link) return fail(res, 'Deck not found in this group.', 404)
+
+    const { data: source } = await supabase
+      .from('decks').select('user_id, title, description, deck_type').eq('id', deckId).single()
+    if (!source) return fail(res, 'Deck not found in this group.', 404)
+    if (source.user_id === req.user.id) return fail(res, 'This deck is already yours.')
+
+    await ensureProfile(req.user)
+    const { data: copy, error } = await supabase
+      .from('decks')
+      .insert({ user_id: req.user.id, title: source.title, description: source.description, deck_type: source.deck_type })
+      .select('id, title').single()
+    if (error) throw error
+
+    const { data: cards } = await supabase.from('cards').select(CARD_FIELDS.join(', ')).eq('deck_id', deckId)
+    if (cards?.length) {
+      const { error: cardError } = await supabase
+        .from('cards').insert(cards.map(c => ({ ...c, deck_id: copy.id })))
+      if (cardError) {
+        await supabase.from('decks').delete().eq('id', copy.id)
+        throw cardError
+      }
+    }
+    ok(res, { id: copy.id, title: copy.title, card_count: cards?.length || 0 })
   } catch (e) { next(e) }
 }

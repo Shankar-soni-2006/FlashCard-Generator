@@ -3,9 +3,9 @@
 
 **Document Version:** 1.0  
 **Product Type:** AI-powered learning and flashcard platform  
-**Primary Stack:** React + Vite + Node.js + Express.js + Supabase + Gemini API  
+**Primary Stack:** React + Vite + Node.js + Express.js + Supabase + Groq + Cloudflare Workers AI  
 **Database:** Supabase PostgreSQL  
-**AI:** Google Gemini API  
+**AI:** Groq (text generation), Cloudflare Workers AI (image analysis)  
 **Scheduling:** SM-2 Spaced Repetition Algorithm  
 
 ---
@@ -49,7 +49,7 @@ The product solves this by combining **AI content generation** with **spaced-rep
 ```text
 Topic / Notes / Image
         ↓
-    Gemini AI
+    AI Models
         ↓
    Flashcards
         ↓
@@ -74,7 +74,7 @@ Next Review Date
 
 ### Primary Goals
 
-1. Generate high-quality flashcards using Gemini.
+1. Generate high-quality flashcards using Groq (text) and Cloudflare Workers AI (images).
 2. Persist all user-generated content.
 3. Provide an effective spaced-repetition workflow.
 4. Automatically calculate review schedules.
@@ -149,9 +149,9 @@ Next Review Date
 | API | Express.js | REST API |
 | Database | Supabase PostgreSQL | Persistent data |
 | Authentication | Supabase Auth | Login/signup/session |
-| Storage | Supabase Storage | Image/diagram storage |
-| AI | Gemini API | Content generation |
-| AI Vision | Gemini Multimodal | Image/diagram analysis |
+| Storage | Not used for images | Uploaded images are processed in memory and not stored |
+| AI | Groq API | Text content generation (topic, notes, programming, vocabulary) |
+| AI Vision | Cloudflare Workers AI | Image/diagram analysis |
 | Scheduler | Custom SM-2 | Spaced repetition |
 | API communication | REST/JSON | Frontend/backend communication |
 | Security | RLS + Auth | Authorization |
@@ -182,7 +182,7 @@ Next Review Date
               │                     │                      │
               ▼                     ▼                      ▼
       ┌───────────────┐      ┌───────────────┐      ┌──────────────┐
-      │   Supabase    │      │   Gemini API  │      │     SM-2     │
+      │   Supabase    │      │   AI Models   │      │     SM-2     │
       │  PostgreSQL   │      │               │      │   Scheduler  │
       │               │      │ Topic         │      │              │
       │ Profiles      │      │ Notes         │      │ Interval     │
@@ -365,7 +365,7 @@ Number of cards:
 5 / 10 / 15 / 20 / 30
 ```
 
-### Gemini Output
+### AI Output
 
 ```json
 {
@@ -398,7 +398,7 @@ Users can paste:
 - Textbook excerpts
 - Personal notes
 
-Gemini should:
+The AI should:
 
 1. Extract concepts.
 2. Identify important information.
@@ -508,11 +508,9 @@ Upload Image
       ↓
 Validate Image
       ↓
-Supabase Storage
+Express Backend (in memory, not stored)
       ↓
-Express Backend
-      ↓
-Gemini Multimodal API
+Cloudflare Workers AI (vision model)
       ↓
 Analyze Image
       ↓
@@ -1042,8 +1040,8 @@ server/
 │   └── statisticsRoutes.js
 │
 ├── services/
-│   ├── gemini/
-│   │   ├── geminiClient.js
+│   ├── gemini/            # legacy folder name: Groq text client + Cloudflare image generator
+│   │   ├── geminiClient.js    # Groq client (JSON mode, model fallback on rate limits)
 │   │   ├── topicGenerator.js
 │   │   ├── notesGenerator.js
 │   │   ├── programmingGenerator.js
@@ -1066,7 +1064,7 @@ server/
 ## 32. AI Service Architecture
 
 ```text
-services/gemini/
+services/gemini/   (legacy folder name)
 │
 ├── geminiClient.js
 ├── topicGenerator.js
@@ -1076,7 +1074,7 @@ services/gemini/
 └── imageGenerator.js
 ```
 
-`geminiClient.js` handles the Gemini API connection.
+`geminiClient.js` handles the Groq API connection, including retrying malformed replies and falling back to other Groq models when one is rate limited. `imageGenerator.js` calls Cloudflare Workers AI for image analysis.
 
 Individual generators handle specialized prompts and schemas.
 
@@ -1084,12 +1082,12 @@ Individual generators handle specialized prompts and schemas.
 
 ## 33. AI Output Validation
 
-Never directly insert Gemini output into PostgreSQL.
+Never directly insert AI output into PostgreSQL.
 
 Pipeline:
 
 ```text
-Gemini
+AI Model
  ↓
 JSON Parse
  ↓
@@ -1145,7 +1143,7 @@ Never accept arbitrary `user_id` from the frontend as proof of ownership.
 
 The system must:
 
-- Protect Gemini API key.
+- Protect the Groq API key and the Cloudflare API token.
 - Protect Supabase service-role key.
 - Use HTTPS in production.
 - Validate input.
@@ -1189,7 +1187,7 @@ without requiring a complete architecture rewrite.
 
 The application should gracefully handle:
 
-- Gemini API failure
+- AI provider failure (Groq or Cloudflare)
 - Supabase failure
 - Network failure
 - Expired sessions
@@ -1341,7 +1339,7 @@ The system shall work on mobile, tablet and desktop.
 
 ## 38. Error Handling
 
-### Gemini Failure
+### AI Provider Failure
 
 ```text
 Unable to generate flashcards.
@@ -1485,7 +1483,7 @@ Choose Generation Method
      ├── Vocabulary
      └── Image
      ↓
-Gemini
+AI (Groq / Cloudflare)
      ↓
 Preview
      ↓
@@ -1552,7 +1550,7 @@ AI-Smart-Flashcards/
 The current project contains the foundation for:
 
 - React/Vite
-- Gemini-based flashcard generation
+- LLM-based flashcard generation
 - Flashcard component
 - Quiz component
 - Existing styling
@@ -1572,7 +1570,7 @@ CURRENT PROJECT
 REFACTOR
       │
       ├── Firebase → Supabase Auth
-      ├── Frontend Gemini → Express/Gemini
+      ├── Frontend AI calls → Express (Groq + Cloudflare)
       ├── React state → Supabase persistence
       ├── Basic cards → Deck/Card system
       └── Basic study → SM-2 review system
@@ -1610,7 +1608,7 @@ NEW PLATFORM
 
 ### Phase 4 — AI Backend
 
-- Gemini client
+- Groq client
 - Topic generation
 - Notes generation
 - Structured output validation
@@ -1665,7 +1663,7 @@ NEW PLATFORM
 - Backend deployment
 - Environment variables
 - Production Supabase configuration
-- Production Gemini configuration
+- Production AI provider configuration (Groq, Cloudflare)
 
 ---
 
@@ -1776,8 +1774,8 @@ NEW PLATFORM
            │               │                │
            ▼               ▼                ▼
       ┌──────────┐   ┌────────────┐   ┌───────────┐
-      │ Supabase │   │  Gemini    │   │   SM-2    │
-      │          │   │    API     │   │ Scheduler │
+      │ Supabase │   │ AI Models  │   │   SM-2    │
+      │          │   │ Groq + CF  │   │ Scheduler │
       │Postgres  │   │            │   │           │
       │Auth      │   │ Topic      │   │ Interval  │
       │Storage   │   │ Notes      │   │ Ease      │
@@ -1791,7 +1789,7 @@ NEW PLATFORM
 
 ## 48. Core Product Principle
 
-> **Gemini creates the learning content, Supabase stores the learning state, and the SM-2 engine determines when the learner should see each card again.**
+> **AI models create the learning content, Supabase stores the learning state, and the SM-2 engine determines when the learner should see each card again.**
 
 The complete learning loop is:
 

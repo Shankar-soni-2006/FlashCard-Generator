@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { postLoginPath } from '../utils/invite'
 import { useAuth } from '../context/AuthContext'
 import { Button } from '../components/common/Button'
 import { Input } from '../components/common/Input'
@@ -20,7 +21,7 @@ export default function Login() {
     const { error: err } = await signIn(form.email, form.password)
     setLoading(false)
     if (err) return setError(err.message)
-    navigate('/dashboard')
+    navigate(postLoginPath())
   }
 
   const handleGoogle = async () => {

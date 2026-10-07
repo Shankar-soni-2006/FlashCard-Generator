@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, Layers, BookOpen, Sparkles, BarChart2, Settings, User, LogOut, Menu, X } from 'lucide-react'
+import { LayoutDashboard, Layers, BookOpen, Sparkles, BarChart2, Users, Settings, User, LogOut, Menu, X } from 'lucide-react'
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { ThemeToggle } from './ThemeToggle'
@@ -10,6 +10,7 @@ const navItems = [
   { to: '/review', icon: BookOpen, label: 'Review' },
   { to: '/decks', icon: Layers, label: 'Decks' },
   { to: '/generate', icon: Sparkles, label: 'Generate' },
+  { to: '/groups', icon: Users, label: 'Groups' },
   { to: '/statistics', icon: BarChart2, label: 'Statistics' },
 ]
 

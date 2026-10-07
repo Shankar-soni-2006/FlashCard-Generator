@@ -8,6 +8,7 @@ import deckRoutes from './routes/deckRoutes.js'
 import cardRoutes from './routes/cardRoutes.js'
 import reviewRoutes from './routes/reviewRoutes.js'
 import statisticsRoutes from './routes/statisticsRoutes.js'
+import groupRoutes from './routes/groupRoutes.js'
 
 const app = express()
 
@@ -30,6 +31,7 @@ app.use('/api/decks/:deckId/cards', authMiddleware, cardRoutes)
 app.use('/api/cards', authMiddleware, cardRoutes)
 app.use('/api/reviews', authMiddleware, reviewRoutes)
 app.use('/api/statistics', authMiddleware, statisticsRoutes)
+app.use('/api/groups', authMiddleware, groupRoutes)
 
 app.use(errorMiddleware)
 

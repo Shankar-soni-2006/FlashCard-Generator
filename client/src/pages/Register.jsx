@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { postLoginPath } from '../utils/invite'
 import { useAuth } from '../context/AuthContext'
 import { Button } from '../components/common/Button'
 import { Input } from '../components/common/Input'
@@ -21,7 +22,7 @@ export default function Register() {
     const { error: err } = await signUp(form.email, form.password, form.name)
     setLoading(false)
     if (err) return setError(err.message)
-    navigate('/dashboard')
+    navigate(postLoginPath())
   }
 
   return (

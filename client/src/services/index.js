@@ -31,6 +31,20 @@ export const aiService = {
   generateImage: (formData) => api.postForm('/ai/generate-image', formData),
 }
 
+export const groupService = {
+  list: () => api.get('/groups'),
+  create: (data) => api.post('/groups', data),
+  get: (id) => api.get(`/groups/${id}`),
+  delete: (id) => api.delete(`/groups/${id}`),
+  regenerateInvite: (id) => api.post(`/groups/${id}/invite/regenerate`),
+  previewInvite: (token) => api.get(`/groups/invite/${token}`),
+  join: (token) => api.post(`/groups/join/${token}`),
+  removeMember: (id, userId) => api.delete(`/groups/${id}/members/${userId}`),
+  addDeck: (id, deckId) => api.post(`/groups/${id}/decks`, { deck_id: deckId }),
+  removeDeck: (id, deckId) => api.delete(`/groups/${id}/decks/${deckId}`),
+  getDeck: (id, deckId) => api.get(`/groups/${id}/decks/${deckId}`),
+}
+
 export const statisticsService = {
   get: () => api.get('/statistics'),
 }

@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { ToastProvider } from './components/common/Toast'
 import { AppLayout } from './components/common/AppLayout'
+import { postLoginPath } from './utils/invite'
 
 import Landing from './pages/Landing'
 import Login from './pages/Login'
@@ -14,6 +15,10 @@ import DeckDetails from './pages/DeckDetails'
 import Review from './pages/Review'
 import Statistics from './pages/Statistics'
 import SharedDeck from './pages/SharedDeck'
+import Groups from './pages/Groups'
+import GroupDetails from './pages/GroupDetails'
+import GroupDeck from './pages/GroupDeck'
+import JoinGroup from './pages/JoinGroup'
 import Profile from './pages/Profile'
 import Settings from './pages/Settings'
 import Privacy from './pages/legal/Privacy'
@@ -39,14 +44,14 @@ function LandingRoute() {
       <span className="w-5 h-5 border-2 border-[var(--color-border)] border-t-[var(--color-text-primary)] rounded-full animate-spin" />
     </div>
   )
-  if (user) return <Navigate to="/dashboard" replace />
+  if (user) return <Navigate to={postLoginPath()} replace />
   return <Landing />
 }
 
 function PublicRoute({ children }) {
   const { user, loading } = useAuth()
   if (loading) return null
-  if (user) return <Navigate to="/dashboard" replace />
+  if (user) return <Navigate to={postLoginPath()} replace />
   return children
 }
 
@@ -76,6 +81,10 @@ export default function App() {
               <Route path="/decks/:id" element={<ProtectedRoute><DeckDetails /></ProtectedRoute>} />
               <Route path="/review" element={<ProtectedRoute><Review /></ProtectedRoute>} />
               <Route path="/statistics" element={<ProtectedRoute><Statistics /></ProtectedRoute>} />
+              <Route path="/groups" element={<ProtectedRoute><Groups /></ProtectedRoute>} />
+              <Route path="/groups/:id" element={<ProtectedRoute><GroupDetails /></ProtectedRoute>} />
+              <Route path="/groups/:id/decks/:deckId" element={<ProtectedRoute><GroupDeck /></ProtectedRoute>} />
+              <Route path="/join/:token" element={<JoinGroup />} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
 

@@ -1040,8 +1040,8 @@ server/
 │   └── statisticsRoutes.js
 │
 ├── services/
-│   ├── gemini/            # legacy folder name: Groq text client + Cloudflare image generator
-│   │   ├── geminiClient.js    # Groq client (JSON mode, model fallback on rate limits)
+│   ├── ai/                # Groq text client + Cloudflare image generator
+│   │   ├── groqClient.js      # Groq client (JSON mode, model fallback on rate limits)
 │   │   ├── topicGenerator.js
 │   │   ├── notesGenerator.js
 │   │   ├── programmingGenerator.js
@@ -1064,9 +1064,9 @@ server/
 ## 32. AI Service Architecture
 
 ```text
-services/gemini/   (legacy folder name)
+services/ai/
 │
-├── geminiClient.js
+├── groqClient.js
 ├── topicGenerator.js
 ├── notesGenerator.js
 ├── programmingGenerator.js
@@ -1074,7 +1074,7 @@ services/gemini/   (legacy folder name)
 └── imageGenerator.js
 ```
 
-`geminiClient.js` handles the Groq API connection, including retrying malformed replies and falling back to other Groq models when one is rate limited. `imageGenerator.js` calls Cloudflare Workers AI for image analysis.
+`groqClient.js` handles the Groq API connection, including retrying malformed replies and falling back to other Groq models when one is rate limited. `imageGenerator.js` calls Cloudflare Workers AI for image analysis.
 
 Individual generators handle specialized prompts and schemas.
 

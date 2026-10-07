@@ -1,4 +1,4 @@
-import { generateJSON } from './geminiClient.js'
+import { generateJSON } from './groqClient.js'
 
 export async function generateVocabularyCards({ word, count = 10 }) {
   const prompt = `Generate ${count} vocabulary flashcards for: "${word}".

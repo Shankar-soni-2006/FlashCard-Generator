@@ -1,4 +1,4 @@
-import { generateJSON } from './geminiClient.js'
+import { generateJSON } from './groqClient.js'
 
 export async function generateNotesCards({ notes, count = 10 }) {
   const prompt = `You are a study assistant. Extract key concepts from the following notes and generate ${count} flashcards.

@@ -1,4 +1,4 @@
-import { generateJSON } from './geminiClient.js'
+import { generateJSON } from './groqClient.js'
 
 export async function generateTopicCards({ topic, count = 10, difficulty = 'auto' }) {
   const difficultyInstruction = difficulty === 'auto'

@@ -1,8 +1,8 @@
-import { generateTopicCards } from '../services/gemini/topicGenerator.js'
-import { generateNotesCards } from '../services/gemini/notesGenerator.js'
-import { generateProgrammingCards } from '../services/gemini/programmingGenerator.js'
-import { generateVocabularyCards } from '../services/gemini/vocabularyGenerator.js'
-import { generateImageCards } from '../services/gemini/imageGenerator.js'
+import { generateTopicCards } from '../services/ai/topicGenerator.js'
+import { generateNotesCards } from '../services/ai/notesGenerator.js'
+import { generateProgrammingCards } from '../services/ai/programmingGenerator.js'
+import { generateVocabularyCards } from '../services/ai/vocabularyGenerator.js'
+import { generateImageCards } from '../services/ai/imageGenerator.js'
 import { ok, fail } from '../utils/response.js'
 
 export async function generateTopic(req, res, next) {
@@ -13,7 +13,7 @@ export async function generateTopic(req, res, next) {
     ok(res, { cards })
   } catch (e) {
     if (e.message?.includes('API_KEY_INVALID') || e.message?.includes('API key not valid')) {
-      return fail(res, 'Gemini API key is invalid. Check your server/.env file.', 500)
+      return fail(res, 'AI API key is invalid. Check your server/.env file.', 500)
     }
     next(e)
   }
@@ -27,7 +27,7 @@ export async function generateNotes(req, res, next) {
     ok(res, { cards })
   } catch (e) {
     if (e.message?.includes('API_KEY_INVALID') || e.message?.includes('API key not valid')) {
-      return fail(res, 'Gemini API key is invalid. Check your server/.env file.', 500)
+      return fail(res, 'AI API key is invalid. Check your server/.env file.', 500)
     }
     next(e)
   }
@@ -41,7 +41,7 @@ export async function generateProgramming(req, res, next) {
     ok(res, { cards })
   } catch (e) {
     if (e.message?.includes('API_KEY_INVALID') || e.message?.includes('API key not valid')) {
-      return fail(res, 'Gemini API key is invalid. Check your server/.env file.', 500)
+      return fail(res, 'AI API key is invalid. Check your server/.env file.', 500)
     }
     next(e)
   }
@@ -55,7 +55,7 @@ export async function generateVocabulary(req, res, next) {
     ok(res, { cards })
   } catch (e) {
     if (e.message?.includes('API_KEY_INVALID') || e.message?.includes('API key not valid')) {
-      return fail(res, 'Gemini API key is invalid. Check your server/.env file.', 500)
+      return fail(res, 'AI API key is invalid. Check your server/.env file.', 500)
     }
     next(e)
   }
@@ -72,7 +72,7 @@ export async function generateImage(req, res, next) {
     ok(res, { cards })
   } catch (e) {
     if (e.message?.includes('API_KEY_INVALID') || e.message?.includes('API key not valid')) {
-      return fail(res, 'Gemini API key is invalid. Check your server/.env file.', 500)
+      return fail(res, 'AI API key is invalid. Check your server/.env file.', 500)
     }
     next(e)
   }

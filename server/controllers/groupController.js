@@ -11,6 +11,14 @@ async function getMembership(groupId, userId) {
   return data
 }
 
+// Accounts created while the signup trigger was broken may lack a profiles row, which group tables reference
+async function ensureProfile(user) {
+  await supabase.from('profiles').upsert(
+    { id: user.id, email: user.email, name: user.user_metadata?.name || user.user_metadata?.full_name || null },
+    { onConflict: 'id', ignoreDuplicates: true }
+  )
+}
+
 const displayName = (profile, fallback) => profile?.name || profile?.email?.split('@')[0] || fallback
 
 export async function listGroups(req, res, next) {
@@ -40,6 +48,7 @@ export async function createGroup(req, res, next) {
     if (!name) return fail(res, 'Group name is required.')
     if (name.length > 80) return fail(res, 'Group name must be 80 characters or fewer.')
     const description = req.body.description?.trim().slice(0, 300) || null
+    await ensureProfile(req.user)
 
     const { data: group, error } = await supabase
       .from('groups')
@@ -146,6 +155,7 @@ export async function joinGroup(req, res, next) {
       .from('groups').select('id, name').eq('invite_token', req.params.token).maybeSingle()
     if (!group) return fail(res, 'This invite link is invalid or has been reset.', 404)
 
+    await ensureProfile(req.user)
     const { error } = await supabase
       .from('group_members')
       .upsert({ group_id: group.id, user_id: req.user.id, role: 'member' }, { onConflict: 'group_id,user_id', ignoreDuplicates: true })

@@ -164,10 +164,9 @@ export default function Review() {
           setQueue(study.cards || [])
           return
         }
-        const due = await reviewService.getDue()
+        const due = await reviewService.getDue(deckId)
         let cards = due || []
         if (deckId) {
-          cards = cards.filter(c => c.deck_id === deckId)
           const deck = await deckService.get(deckId)
           setDeckTitle(deck?.title || '')
         }

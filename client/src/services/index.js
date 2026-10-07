@@ -18,7 +18,7 @@ export const cardService = {
 }
 
 export const reviewService = {
-  getDue: () => api.get('/reviews/due'),
+  getDue: (deckId) => api.get(deckId ? `/reviews/due?deck=${encodeURIComponent(deckId)}` : '/reviews/due'),
   submitRating: (cardId, rating) => api.post(`/reviews/${cardId}`, { rating }),
   getHistory: () => api.get('/reviews/history'),
 }

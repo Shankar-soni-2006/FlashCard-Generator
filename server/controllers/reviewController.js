@@ -5,7 +5,9 @@ import { getStudyableDeckIds, canStudyCard } from '../services/access/access.js'
 
 export async function getDueCards(req, res, next) {
   try {
-    // Get all card_progress for user where due_date <= now
+    const deckId = req.query.deck || null
+
+    // Cards the user has reviewed before whose due date has arrived
     const { data: progress, error } = await supabase
       .from('card_progress')
       .select('*, cards(*)')
@@ -14,19 +16,25 @@ export async function getDueCards(req, res, next) {
       .order('due_date', { ascending: true })
     if (error) throw error
 
-    // Also include cards with no progress record (never reviewed)
-    const { data: allCards } = await supabase
+    // Every card the user has ever reviewed, due or not. Only cards with no progress at all are new.
+    const { data: allProgress } = await supabase
+      .from('card_progress')
+      .select('card_id')
+      .eq('user_id', req.user.id)
+    const reviewedIds = new Set((allProgress || []).map(p => p.card_id))
+
+    let newCardsQuery = supabase
       .from('cards')
       .select('*, decks!inner(user_id)')
       .eq('decks.user_id', req.user.id)
-
-    const reviewedIds = new Set((progress || []).map(p => p.card_id))
+    if (deckId) newCardsQuery = newCardsQuery.eq('deck_id', deckId)
+    const { data: allCards } = await newCardsQuery
     const newCards = (allCards || []).filter(c => !reviewedIds.has(c.id))
 
     // Progress can exist for cards in group decks; drop any the user can no longer access (e.g. after leaving a group)
     const studyable = await getStudyableDeckIds(req.user.id)
     const dueFromProgress = (progress || [])
-      .filter(p => p.cards && studyable.has(p.cards.deck_id))
+      .filter(p => p.cards && studyable.has(p.cards.deck_id) && (!deckId || p.cards.deck_id === deckId))
       .map(p => ({ ...p.cards, deck_id: p.cards.deck_id }))
     const queue = [...dueFromProgress, ...newCards.slice(0, 50)]
 

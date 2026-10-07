@@ -194,8 +194,8 @@ export default function Review() {
         setCurrent(c => c + 1)
         setRevealed(false)
       }
-    } catch {
-      toast({ message: 'Failed to save rating.', type: 'error' })
+    } catch (e) {
+      toast({ message: `Failed to save rating: ${e.message || 'unknown error'}`, type: 'error' })
     } finally {
       setSubmitting(false)
     }

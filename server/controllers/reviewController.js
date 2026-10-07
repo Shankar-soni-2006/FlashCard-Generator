@@ -76,7 +76,7 @@ export async function submitRating(req, res, next) {
     if (upsertError) throw upsertError
 
     // Insert review history
-    await supabase.from('reviews').insert({
+    const { error: reviewError } = await supabase.from('reviews').insert({
       user_id: req.user.id,
       card_id: cardId,
       rating,
@@ -85,6 +85,8 @@ export async function submitRating(req, res, next) {
       previous_ease_factor: existing?.ease_factor ?? 2.5,
       new_ease_factor: newProgress.ease_factor,
     })
+    // The review row is what earns XP, so a failed insert must not look like success
+    if (reviewError) throw reviewError
 
     ok(res, { ...newProgress, rating })
   } catch (e) { next(e) }

@@ -3,7 +3,7 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
   plugins: [react()],
-  server: { proxy: { '/api': 'https://flashcard-backend-by-shankar.vercel.app/api/health' } },
+  server: { proxy: { '/api': 'http://localhost:5000' } },
   build: {
     rollupOptions: {
       output: {
